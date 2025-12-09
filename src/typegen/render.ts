@@ -51,9 +51,12 @@ export function render(params: {
   nexusPrismaImportId?: string
   paginationStrategy: PaginationStrategy
 }) {
+  // For prisma-client generator (Prisma 7+), import from /client subpath
+  const prismaImportPath = `${params.prismaClientImportId}/client`
+
   return `\
 import * as Typegen from '${params.nexusPrismaImportId ?? '@mercurialweb/nexus-plugin-prisma/typegen'}'
-import * as Prisma from '${params.prismaClientImportId}';
+import * as Prisma from '${prismaImportPath}';
 
 // Pagination type
 ${renderPaginationType(params.paginationStrategy)}
@@ -94,6 +97,7 @@ declare global {
 }
 
 function renderPrismaModels(dmmf: DmmfDocument) {
+  // For prisma-client generator (Prisma 7+), types are exported under Prisma namespace
   return `\
 interface PrismaModels {
 ${dmmf.datamodel.models.map((m) => `  ${m.name}: Prisma.${m.name}`).join('\n')}

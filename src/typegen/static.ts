@@ -1,4 +1,3 @@
-import { PrismaClient } from '@prisma/client'
 import { GraphQLResolveInfo } from 'graphql'
 import { core } from 'nexus'
 import { CommonFieldConfig } from 'nexus/dist/core'
@@ -9,12 +8,13 @@ import * as Helpers from './helpers'
 
 /**
  * Framework-only
+ * Note: PrismaClient type is now generic to support both prisma-client-js and prisma-client generators
  */
 
 declare global {
   interface NexusTestContextApp {
     db: {
-      client: PrismaClient
+      client: any // PrismaClient - type is dynamic based on generator used
     }
   }
 }

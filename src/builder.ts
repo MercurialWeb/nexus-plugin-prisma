@@ -93,10 +93,24 @@ export interface Options {
   shouldGenerateArtifacts?: boolean
   inputs?: {
     /**
-     * Where can nexus-prisma find the Prisma Client JS package? By default looks in
-     * `node_modules/@prisma/client`. This is needed because nexus-prisma
-     * gets your Prisma schema AST and Prisma Client JS crud info from the generated
-     * Prisma Client JS package.
+     * Path to your generated Prisma Client. For Prisma 7+ with `prisma-client` generator,
+     * this should match the `output` field in your schema.prisma generator block.
+     *
+     * @default './src/generated/prisma'
+     *
+     * @example
+     * // In schema.prisma:
+     * // generator client {
+     * //   provider = "prisma-client"
+     * //   output   = "./src/generated/prisma"
+     * // }
+     *
+     * // In nexus config:
+     * nexusPrisma({
+     *   inputs: {
+     *     prismaClient: './src/generated/prisma'
+     *   }
+     * })
      */
     prismaClient?: string
   }
@@ -191,9 +205,11 @@ let defaultClientPath: string
 if (process.env.NEXUS_PRISMA_CLIENT_PATH) {
   defaultClientPath = process.env.NEXUS_PRISMA_CLIENT_PATH
 } else if (process.env.LINK) {
-  defaultClientPath = eval("path.join(process.cwd(), '/node_modules/@prisma/client')")
+  defaultClientPath = eval("path.join(process.cwd(), '/src/generated/prisma')")
 } else {
-  defaultClientPath = '@prisma/client'
+  // Default path for prisma-client generator (Prisma 7+)
+  // Users should set NEXUS_PRISMA_CLIENT_PATH or inputs.prismaClient to their custom output path
+  defaultClientPath = './src/generated/prisma'
 }
 
 // NOTE This will be replaced by Nexus plugins once typegen integration is available.

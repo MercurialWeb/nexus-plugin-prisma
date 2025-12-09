@@ -1,5 +1,5 @@
 import * as Typegen from '../../../src/typegen/static'
-import * as Prisma from '@prisma/client';
+import * as Prisma from './src/generated/prisma/client';
 
 // Pagination type
 type Pagination = {

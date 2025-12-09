@@ -120,7 +120,8 @@ async function generateClientFromDatamodel(metadata: Metadata) {
   await generator.generate()
   generator.stop()
 
-  const { PrismaClient } = require(path.join(metadata.clientDir, 'index.js'))
+  // For prisma-client generator, PrismaClient is exported from /client subpath
+  const { PrismaClient } = require(path.join(metadata.clientDir, 'client.js'))
   const client = new PrismaClient()
 
   return {
@@ -159,7 +160,7 @@ function getTestMetadata(datamodelString: string): Metadata {
     }
 
     generator client {
-      provider = "prisma-client-js"
+      provider = "prisma-client"
       output   = "${clientDir}"
     }
 
