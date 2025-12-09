@@ -1,4 +1,4 @@
-const semver = require('semver')
+// This script ensures all @prisma/* dependencies are on the same version
 const packageJson = require('../package.json')
 
 const prismaDeps = [
@@ -6,16 +6,13 @@ const prismaDeps = [
   ...Object.entries(packageJson.devDependencies),
 ].filter(([depName]) => depName.startsWith('@prisma/') || depName === 'prisma')
 
-const validVersionRange = packageJson.peerDependencies['prisma']
+// Get all unique versions
+const versions = [...new Set(prismaDeps.map(([, ver]) => ver))]
 
-const invalidDeps = prismaDeps.filter(
-  ([, prismaDepVersion]) => !semver.satisfies(prismaDepVersion, validVersionRange)
-)
-
-if (invalidDeps.length > 0) {
+if (versions.length > 1) {
   console.log(
-    `Some of your Prisma dependencies are not in sync with the supported version range ${validVersionRange}\n\n`,
-    invalidDeps.map(([name, ver]) => `${name}@${ver}`).join(', ')
+    `Prisma dependencies have mismatched versions:\n\n`,
+    prismaDeps.map(([name, ver]) => `${name}@${ver}`).join('\n')
   )
   process.exit(1)
 }

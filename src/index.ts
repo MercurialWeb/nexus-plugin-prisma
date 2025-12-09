@@ -59,13 +59,11 @@ function ensurePeerDepRangeSatisfied(depName: string) {
 
 ensureDepIsInstalled('nexus')
 ensureDepIsInstalled('graphql')
-ensureDepIsInstalled('prisma')
 
 // TODO: Bring back peer dep range check for graphql once we have proper ranges
 // TODO: They're currently way too conservative
 
 //ensurePeerDepRangeSatisfied('graphql')
 ensurePeerDepRangeSatisfied('nexus')
-ensurePeerDepRangeSatisfied('prisma')
 
 export * from './plugin'
