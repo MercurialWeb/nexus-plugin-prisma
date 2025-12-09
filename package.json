@@ -1,6 +1,6 @@
 {
   "name": "@mercurialweb/nexus-plugin-prisma",
-  "version": "7.1.0-5",
+  "version": "7.1.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "license": "MIT",
