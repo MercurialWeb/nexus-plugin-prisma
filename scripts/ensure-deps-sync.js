@@ -4,9 +4,9 @@ const packageJson = require('../package.json')
 const prismaDeps = [
   ...Object.entries(packageJson.dependencies),
   ...Object.entries(packageJson.devDependencies),
-].filter(([depName]) => depName.startsWith('@prisma/'))
+].filter(([depName]) => depName.startsWith('@prisma/') || depName === 'prisma')
 
-const validVersionRange = packageJson.peerDependencies['@prisma/client']
+const validVersionRange = packageJson.peerDependencies['prisma']
 
 const invalidDeps = prismaDeps.filter(
   ([, prismaDepVersion]) => !semver.satisfies(prismaDepVersion, validVersionRange)

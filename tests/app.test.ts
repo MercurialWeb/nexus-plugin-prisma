@@ -77,13 +77,11 @@ it('integrates together', async () => {
   //
   const graphqlSchema = fs.read('generated/schema.graphql')
   const nexusPrismaTypeGen = fs.read('generated/nexus-plugin-prisma-typegen.d.ts')
-  const prismaClient = require('@prisma/client')
-
   expect(removeNexusHeader(graphqlSchema)).toMatchSnapshot('graphql schema')
   expect(nexusPrismaTypeGen).toMatchSnapshot('nexus prisma typegen')
 
-  // For convenience
-  expect(prismaClient.dmmf || prismaClient.Prisma.dmmf).toMatchSnapshot('prisma client dmmf')
+  // Note: With prisma-client generator, DMMF is no longer available from the client
+  // The DMMF is obtained via @prisma/internals getDMMF() instead
 
   // Assert the app type checks. In effect this is testing that our
   // typegen works.
