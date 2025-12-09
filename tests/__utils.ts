@@ -3,6 +3,7 @@ import * as SDK from '@prisma/internals'
 import * as GQL from 'graphql'
 import * as Nexus from 'nexus'
 import stripAnsi from 'strip-ansi'
+import * as fs from 'fs'
 import * as NexusPrismaBuilder from '../src/builder'
 import { DmmfDocument } from '../src/dmmf'
 import { transform, TransformOptions } from '../src/dmmf/transformer'
@@ -27,8 +28,10 @@ export async function getDmmf(datamodel: string, options?: TransformOptions) {
 }
 
 export async function getPinnedDmmfFromSchemaPath(datamodelPath: string) {
+  // In Prisma 7.x, datamodelPath option was removed, we need to read the file manually
+  const datamodel = fs.readFileSync(datamodelPath, 'utf-8')
   return SDK.getDMMF({
-    datamodelPath,
+    datamodel,
   })
 }
 

@@ -29,7 +29,7 @@ export function transform(document: DMMF.Document, options?: TransformOptions): 
   const result = {
     datamodel: transformDatamodel(document.datamodel),
     schema: transformSchema(document.schema, addDefaultOptions(options)),
-    operations: document.mappings.modelOperations as any,
+    operations: (document.mappings?.modelOperations ?? []) as any,
   }
   return result
 }
@@ -51,31 +51,42 @@ const paginationArgNames = ['cursor', 'take', 'skip']
 
 type TransformConfig = Required<TransformOptions>
 
-function transformSchema(schema: DMMF.Schema, options: TransformConfig): InternalDMMF.Schema {
-  const enumTypes: any = schema?.enumTypes?.model ?? []
+function transformSchema(schema: DMMF.Schema | undefined, options: TransformConfig): InternalDMMF.Schema {
+  // Handle undefined schema for Prisma 7.x compatibility
+  if (!schema) {
+    return {
+      enums: [],
+      inputTypes: [],
+      outputTypes: [],
+    }
+  }
+
+  const enumTypes: any = schema.enumTypes?.model ?? []
 
   const inputTypes =
-    schema?.inputObjectTypes?.model?.map((type) =>
+    schema.inputObjectTypes?.model?.map((type) =>
       transformInputType(type, options.globallyComputedInputs, options.atomicOperations)
     ) ?? []
 
   const outputTypes =
-    schema?.outputObjectTypes.model?.map((type) => {
+    schema.outputObjectTypes?.model?.map((type) => {
       return transformOutputType(type, options)
     }) ?? []
 
   // todo review if we want to keep model & prisma separated or not
   // since Prisma 2.12
 
-  enumTypes.push(...schema.enumTypes.prisma)
+  if (schema.enumTypes?.prisma) {
+    enumTypes.push(...schema.enumTypes.prisma)
+  }
 
   inputTypes.push(
-    ...schema.inputObjectTypes.prisma.map((type) => {
+    ...(schema.inputObjectTypes?.prisma ?? []).map((type) => {
       return transformInputType(type, options.globallyComputedInputs, options.atomicOperations)
     })
   )
   outputTypes.push(
-    ...schema.outputObjectTypes.prisma.map((type) => {
+    ...(schema.outputObjectTypes?.prisma ?? []).map((type) => {
       return transformOutputType(type, options)
     })
   )
