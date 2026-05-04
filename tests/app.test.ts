@@ -47,6 +47,10 @@ it('integrates together', async () => {
     outputs: {
       typegen: nexusPrismaTypegenPath,
     },
+    inputs: {
+      prismaClient: fs.path('generated/prisma'),
+      prismaSchema: fs.path('schema.prisma'),
+    },
     experimentalCRUD: true,
     /**
      * Import nexus-prisma from the local typegen.d.ts file, as nexus-prisma is not installed

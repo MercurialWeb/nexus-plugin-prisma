@@ -13,10 +13,22 @@ const isCompleteDmmf = (dmmf: any): boolean => {
 }
 
 /**
- * Find the schema.prisma file in common locations
- * Can be overridden with PRISMA_SCHEMA_PATH environment variable
+ * Find the schema.prisma file in common locations.
+ * Resolution order:
+ * 1. Explicit `explicitPath` argument (e.g. from plugin options)
+ * 2. `PRISMA_SCHEMA_PATH` environment variable
+ * 3. `./prisma/schema.prisma` and `./schema.prisma` relative to `process.cwd()`
  */
-const findSchemaPath = (): string | null => {
+const findSchemaPath = (explicitPath?: string): string | null => {
+  if (explicitPath) {
+    const resolved = path.isAbsolute(explicitPath)
+      ? explicitPath
+      : path.resolve(process.cwd(), explicitPath)
+    if (fs.existsSync(resolved)) {
+      return resolved
+    }
+  }
+
   if (process.env.PRISMA_SCHEMA_PATH && fs.existsSync(process.env.PRISMA_SCHEMA_PATH)) {
     return process.env.PRISMA_SCHEMA_PATH
   }
@@ -39,14 +51,22 @@ const findSchemaPath = (): string | null => {
  * Get the DMMF from @prisma/internals.
  * For Prisma 7+ with prisma-client generator, this is the only way to get the full DMMF.
  */
-export const getPrismaClientDmmf = (_packagePath: string) => {
+export const getPrismaClientDmmf = (_packagePath: string, prismaSchemaPath?: string) => {
   let dmmf: any = undefined
   let debugInfo: string[] = []
+
+  // Resolve schema path eagerly so we can both pass it to the child process and
+  // include it in any error message.
+  const resolvedSchemaPath = findSchemaPath(prismaSchemaPath)
 
   try {
     const { stdout } = execa.sync('node', [__dirname + '/generate.js'], {
       cwd: process.cwd(),
-      env: { ...process.env }, // Pass all environment variables including PRISMA_SCHEMA_PATH
+      env: {
+        ...process.env,
+        // Forward the resolved schema path so generate.js doesn't have to re-discover it.
+        ...(resolvedSchemaPath ? { PRISMA_SCHEMA_PATH: resolvedSchemaPath } : {}),
+      },
     })
     const generatedDmmf = JSON.parse(stdout)
 
@@ -65,7 +85,6 @@ export const getPrismaClientDmmf = (_packagePath: string) => {
   }
 
   if (!dmmf) {
-    const schemaPath = findSchemaPath()
     throw new Error(`\
 Could not load DMMF with schema information.
 
@@ -73,7 +92,7 @@ This plugin requires Prisma 7+ with the 'prisma-client' generator.
 
 Please ensure:
 1. You have run \`prisma generate\`
-2. Your schema.prisma file exists at: ${schemaPath || 'prisma/schema.prisma'}
+2. Your schema.prisma file exists at: ${resolvedSchemaPath || 'prisma/schema.prisma'}
 3. @prisma/internals is installed
 4. Your generator uses 'prisma-client' (not 'prisma-client-js')
 

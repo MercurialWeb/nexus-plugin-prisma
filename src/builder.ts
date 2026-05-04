@@ -113,6 +113,15 @@ export interface Options {
      * })
      */
     prismaClient?: string
+    /**
+     * Absolute or relative path to your `schema.prisma` file. Used to load the DMMF
+     * via `@prisma/internals` `getDMMF` for Prisma 7+ with the `prisma-client` generator.
+     *
+     * If omitted, the plugin will fall back to the `PRISMA_SCHEMA_PATH` environment variable
+     * and then to the common locations `./prisma/schema.prisma` and `./schema.prisma`
+     * relative to `process.cwd()`.
+     */
+    prismaSchema?: string
   }
   outputs?: {
     /**
@@ -267,6 +276,7 @@ export class SchemaBuilder {
         globallyComputedInputs: this.globallyComputedInputs,
         paginationStrategy: this.paginationStrategy,
         atomicOperations: config.atomicOperations,
+        prismaSchemaPath: config.inputs.prismaSchema,
       })
     this.scalars = (options.scalars as any) ?? {}
     this.publisher = new Publisher(this.dmmf, config.nexusBuilder, this.scalars)
@@ -284,6 +294,7 @@ export class SchemaBuilder {
     if (config.shouldGenerateArtifacts) {
       Typegen.generateSync({
         prismaClientPath: config.inputs.prismaClient,
+        prismaSchemaPath: config.inputs.prismaSchema,
         typegenPath: config.outputs.typegen,
         paginationStrategy: this.paginationStrategy,
         nexusPrismaImportId: options.nexusPrismaImportId,

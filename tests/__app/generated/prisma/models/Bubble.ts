@@ -144,7 +144,7 @@ export type BubbleGroupByOutputType = {
   _max: BubbleMaxAggregateOutputType | null
 }
 
-type GetBubbleGroupByPayload<T extends BubbleGroupByArgs> = Prisma.PrismaPromise<
+export type GetBubbleGroupByPayload<T extends BubbleGroupByArgs> = Prisma.PrismaPromise<
   Array<
     Prisma.PickEnumerable<BubbleGroupByOutputType, T['by']> &
       {
@@ -1038,6 +1038,11 @@ export type BubbleFindManyArgs<ExtArgs extends runtime.Types.Extensions.Internal
    * Skip the first `n` Bubbles.
    */
   skip?: number
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   * 
+   * Filter by unique combinations of Bubbles.
+   */
   distinct?: Prisma.BubbleScalarFieldEnum | Prisma.BubbleScalarFieldEnum[]
 }
 

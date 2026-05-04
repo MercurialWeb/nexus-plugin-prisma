@@ -11,14 +11,22 @@ export type TransformOptions = {
   atomicOperations?: boolean
   globallyComputedInputs?: GlobalComputedInputs
   paginationStrategy?: PaginationStrategy
+  prismaSchemaPath?: string
 }
 
 export const getTransformedDmmf = (
   prismaClientPackagePath: string,
   options?: TransformOptions
-): DmmfDocument => new DmmfDocument(transform(getPrismaClientDmmf(prismaClientPackagePath), options))
+): DmmfDocument =>
+  new DmmfDocument(
+    transform(getPrismaClientDmmf(prismaClientPackagePath, options?.prismaSchemaPath), options)
+  )
 
-const addDefaultOptions = (givenOptions?: TransformOptions): Required<TransformOptions> => ({
+// `prismaSchemaPath` only affects how the DMMF is loaded upstream, so it's intentionally
+// excluded from the transform-time config to keep the schema transformation pure.
+const addDefaultOptions = (
+  givenOptions?: TransformOptions
+): Required<Omit<TransformOptions, 'prismaSchemaPath'>> => ({
   globallyComputedInputs: {},
   paginationStrategy: paginationStrategies.relay,
   atomicOperations: true,
@@ -49,7 +57,7 @@ function transformDatamodel(datamodel: DMMF.Datamodel): InternalDMMF.Datamodel {
 
 const paginationArgNames = ['cursor', 'take', 'skip']
 
-type TransformConfig = Required<TransformOptions>
+type TransformConfig = Required<Omit<TransformOptions, 'prismaSchemaPath'>>
 
 function transformSchema(schema: DMMF.Schema | undefined, options: TransformConfig): InternalDMMF.Schema {
   // Handle undefined schema for Prisma 7.x compatibility

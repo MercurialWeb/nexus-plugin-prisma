@@ -9,6 +9,7 @@ import { hardWriteFile, hardWriteFileSync } from '../utils'
 
 type Options = {
   prismaClientPath: string
+  prismaSchemaPath?: string
   typegenPath: string
   paginationStrategy: PaginationStrategy
   nexusPrismaImportId?: string
@@ -26,11 +27,17 @@ export function doGenerate(sync: true, options: Options): void
 export function doGenerate(sync: false, options: Options): Promise<void>
 export function doGenerate(sync: boolean, options: Options): void | Promise<void> {
   const paginationStrategy = options.paginationStrategy
-  const prismaClientImportId =
-    Path.isAbsolute(options.typegenPath) && Path.isAbsolute(options.prismaClientPath)
-      ? Path.relative(Path.dirname(options.typegenPath), options.prismaClientPath)
-      : options.prismaClientPath
-  const dmmf = getTransformedDmmf(options.prismaClientPath)
+  let prismaClientImportId: string
+  if (Path.isAbsolute(options.typegenPath) && Path.isAbsolute(options.prismaClientPath)) {
+    const relative = Path.relative(Path.dirname(options.typegenPath), options.prismaClientPath)
+    // Ensure the result is treated as a relative module path so it isn't resolved as a node_modules package.
+    prismaClientImportId = relative.startsWith('.') ? relative : `./${relative}`
+  } else {
+    prismaClientImportId = options.prismaClientPath
+  }
+  const dmmf = getTransformedDmmf(options.prismaClientPath, {
+    prismaSchemaPath: options.prismaSchemaPath,
+  })
   const tsDeclaration = render({
     dmmf,
     paginationStrategy,
